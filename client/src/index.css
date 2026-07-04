@@ -610,6 +610,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Compliance Certificate Print Layout */
+.audit-certificate-print-header {
+  display: none;
+}
+
 @media print {
   body {
     background: #ffffff !important;
@@ -617,44 +621,69 @@ h1, h2, h3, h4, h5, h6 {
     color: #0d1117 !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
   }
-  
-  /* Hide UI framework layouts */
-  .sidebar, 
-  .btn, 
-  .modal-close-btn, 
-  .nav-links, 
-  header, 
-  .logo-section, 
-  .workspace-badge,
-  .form-group,
-  .detailed-timeline-title,
-  .audit-details-timeline {
+
+  /* Hide entire dashboard — only print the open audit modal */
+  body.printing-audit-certificate .sidebar,
+  body.printing-audit-certificate .main-content {
     display: none !important;
   }
-  
-  .main-content {
-    margin-left: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+
+  body.printing-audit-certificate .app-container {
+    display: block !important;
+    min-height: auto !important;
   }
-  
-  .modal-overlay {
+
+  .audit-export-btn,
+  .modal-close-btn,
+  .btn {
+    display: none !important;
+  }
+
+  .audit-certificate-print-header {
+    display: block !important;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #10b981;
+  }
+
+  .audit-certificate-print-header h1 {
+    font-size: 22px !important;
+    color: #0d1117 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .audit-certificate-print-header p {
+    font-size: 13px !important;
+    color: #57606a !important;
+  }
+
+  .audit-certificate-modal {
     position: static !important;
+    display: block !important;
     background: none !important;
     backdrop-filter: none !important;
     padding: 0 !important;
     width: 100% !important;
+    overflow: visible !important;
   }
-  
-  .modal-content {
+
+  .audit-certificate-content {
     border: none !important;
     box-shadow: none !important;
     max-width: 100% !important;
-    max-height: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
     background: #ffffff !important;
     color: #0d1117 !important;
+    padding: 24px !important;
   }
-  
+
+  .modal-body {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
   .glass-card {
     border: 1px solid #e1e4e8 !important;
     background: #ffffff !important;
@@ -662,19 +691,28 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: none !important;
     margin-bottom: 20px !important;
     border-radius: 8px !important;
+    break-inside: avoid;
   }
-  
+
   h1, h2, h3, h4 {
     color: #0d1117 !important;
   }
-  
+
   .message-bubble, .claim-row, .citation-card {
     background: #f6f8fa !important;
     border: 1px solid #e1e4e8 !important;
     color: #0d1117 !important;
   }
-  
-  span, p, div {
+
+  .badge {
+    border: 1px solid #d0d7de !important;
+  }
+
+  span, p, div, li {
     color: #24292e !important;
+  }
+
+  .timeline-dot {
+    color: #ffffff !important;
   }
 }

@@ -121,6 +121,16 @@ export default function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleExportAuditCertificate = () => {
+    document.body.classList.add('printing-audit-certificate');
+    const cleanup = () => {
+      document.body.classList.remove('printing-audit-certificate');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+  };
+
   // Upload handler
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -897,15 +907,19 @@ export default function App() {
       {/* AUDIT DETAILS TRACE MODAL */}
       {/* ---------------------------------------------------- */}
       {selectedAudit && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay audit-certificate-modal">
+          <div className="modal-content audit-certificate-content">
+            <div className="audit-certificate-print-header">
+              <h1>Guardrail Plug — Audit Compliance Certificate</h1>
+              <p>Audit ID: {selectedAudit.auditId} · {selectedAudit.applicationName} · {new Date(selectedAudit.timestamp).toLocaleString()}</p>
+            </div>
             <div className="modal-header">
               <h3 className="panel-title">Audit Trace: {selectedAudit.auditId}</h3>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <button 
-                  className="btn btn-secondary" 
+                  className="btn btn-secondary audit-export-btn" 
                   style={{ marginRight: '16px', padding: '6px 12px', fontSize: '12px' }} 
-                  onClick={() => window.print()}
+                  onClick={handleExportAuditCertificate}
                 >
                   🖨️ Export Audit Certificate
                 </button>
