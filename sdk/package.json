@@ -1,15 +1,30 @@
 {
-  "name": "sdk",
+  "name": "ai-authentication-plugin",
   "version": "1.0.0",
-  "private": true,
+  "description": "An AI Authentication and Guardrail SDK for middleware routing and gateway analysis.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {
-    "shared": "file:../shared"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharma-10-personal/ai-authentication-plugin.git"
   },
+  "keywords": [
+    "ai",
+    "authentication",
+    "guardrail",
+    "gateway",
+    "security"
+  ],
+  "author": "Sharma S S <sharmas@wekancode.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sharma-10-personal/ai-authentication-plugin/issues"
+  },
+  "homepage": "https://github.com/sharma-10-personal/ai-authentication-plugin#readme",
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3"

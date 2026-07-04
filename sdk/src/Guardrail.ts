@@ -1,4 +1,4 @@
-import { SDKChatRequest, SDKChatResponse } from 'shared';
+import { SDKChatRequest, SDKChatResponse } from './types.js';
 
 export interface GuardrailOptions {
   endpoint?: string;
