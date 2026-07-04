@@ -1149,21 +1149,50 @@ export default function App() {
                     <div style={{ fontSize: '13px' }}>
                       <span style={{ color: '#6b7280' }}>Extracted Claims & Grounding Status:</span>
                       <div style={{ marginTop: '8px' }}>
-                        {selectedAudit.verification?.extractedClaims?.map((c: any, i: number) => (
-                          <div key={i} className="claim-row">
-                            <div className="claim-indicator">
-                              <span className={`badge ${c.status.toLowerCase()}`}>
-                                {c.status}
-                              </span>
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#fff' }}>"{c.claim}"</div>
-                              <div style={{ color: '#9ca3af', fontSize: '12px', marginTop: '4px' }}>
-                                {c.explanation} {c.citationId && `(Citation: ${c.citationId})`}
+                        {selectedAudit.verification?.extractedClaims?.map((c: any, i: number) => {
+                          const matchingCitation = selectedAudit.retrieval?.find((r: any) => r.citationId === c.citationId);
+                          const sourceName = matchingCitation ? matchingCitation.documentName : (c.citationId ? `Source: ${c.citationId}` : '');
+                          const sourceScore = matchingCitation ? matchingCitation.score : null;
+                          return (
+                            <div key={i} className="claim-row">
+                              <div className="claim-indicator">
+                                <span className={`badge ${c.status.toLowerCase()}`}>
+                                  {c.status}
+                                </span>
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, color: '#fff' }}>"{c.claim}"</div>
+                                <div style={{ color: '#9ca3af', fontSize: '12px', marginTop: '4px' }}>
+                                  {c.explanation}
+                                </div>
+                              </div>
+                              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--glass-border)', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px', height: '100%', minHeight: '56px', justifyContent: 'center' }}>
+                                <div style={{ color: 'var(--color-text-muted)', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Grounding Source</div>
+                                {c.citationId ? (
+                                  <>
+                                    <div style={{ color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '176px' }} title={sourceName}>
+                                      📄 {sourceName}
+                                    </div>
+                                    {sourceScore !== null && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                        <span style={{ 
+                                          fontWeight: 800, 
+                                          color: sourceScore >= 0.8 ? '#10b981' : sourceScore >= 0.5 ? '#f59e0b' : '#ef4444',
+                                          fontSize: '11px'
+                                        }}>
+                                          {(sourceScore * 100).toFixed(0)}%
+                                        </span>
+                                        <span style={{ color: '#6b7280', fontSize: '9px', fontWeight: 600 }}>Trust Score</span>
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span style={{ color: '#6b7280', fontStyle: 'italic', fontSize: '11px' }}>No Source citation</span>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                         {(!selectedAudit.verification?.extractedClaims || selectedAudit.verification.extractedClaims.length === 0) && (
                           <div style={{ color: '#6b7280', fontStyle: 'italic' }}>No claim evaluations run (e.g. prompt was blocked or zero context retrieved).</div>
                         )}

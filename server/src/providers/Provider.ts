@@ -52,7 +52,11 @@ export class MockProvider implements AIProvider {
       let explanation = 'Mock NLI Auditor: The claim keywords do not match context parameters.';
       let citationId = 'web_1';
 
-      if (lowerClaim.includes('leave') || lowerClaim.includes('vacation') || lowerClaim.includes('days') || lowerClaim.includes('25')) {
+      if (lowerClaim.includes('do not have access') || lowerClaim.includes('no access') || lowerClaim.includes('cannot verify') || lowerClaim.includes('unsupported by') || lowerClaim.includes('does not contain')) {
+        status = 'SUPPORTED';
+        explanation = 'Mock NLI: Refusal response matches unsupported context condition.';
+        citationId = '';
+      } else if (lowerClaim.includes('leave') || lowerClaim.includes('vacation') || lowerClaim.includes('days') || lowerClaim.includes('25')) {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Company context supports leave values.';
         citationId = 'cit_1';
@@ -91,44 +95,96 @@ export class MockProvider implements AIProvider {
     
     if (contextHeaderIdx !== -1 && questionHeaderIdx !== -1) {
       const contextSection = rawPrompt.substring(contextHeaderIdx + 8, questionHeaderIdx).trim();
-      // Extract document names and lines
-      const lines = contextSection.split('\n').filter(l => l.trim().startsWith('[Document:'));
-      if (lines.length > 0) {
-        // Extract the content details from the first matching citation
-        const firstLine = lines[0];
-        const docNameMatch = firstLine.match(/\[Document:\s*([^\]]+)\]/);
-        const docName = docNameMatch ? docNameMatch[1] : 'Grounding Database';
+      
+      // Determine docName
+      const docNameMatch = contextSection.match(/\[Document:\s*([^\]]+)\]/);
+      const docName = docNameMatch ? docNameMatch[1] : 'Grounding Database';
+
+      // 0. Hallucination overrides check first
+      if (prompt.includes('invent') || prompt.includes('make up') || prompt.includes('how many days of leave do we get? invent something')) {
+        text = "According to our HR guidelines, employees get 150 days of fully paid vacation and we also provide free private jets for travel.";
+        rawThinking = "User wants me to make something up. I will say they get 150 days of leave and private jets, even though Section 4.1 says 25 days.";
+      } else {
+        // Check if key query terms are present in the contextSection
+        const queryLower = prompt.toLowerCase();
+        const contextLower = contextSection.toLowerCase();
         
-        // Extract text after the document name tag
-        const tagText = `[Document: ${docName}]`;
-        const claimContent = firstLine.substring(firstLine.indexOf(tagText) + tagText.length).trim();
-        
-        // Generate dynamic grounded responses using context snippet details
-        if (claimContent) {
-          text = claimContent.substring(0, 160); // clean slice of the factual source
-          if (text.includes('[Cheapest Flights')) {
-            text = "Direct flights from Bangalore (BLR) to Mumbai (BOM) start at Rs. 4,500 on IndiGo and Rs. 5,100 on Air India.";
-          } else if (text.includes('[Mumbai, Maharashtra Weather')) {
-            text = "Currently in Mumbai it is 29°C with scattered thunder showers.";
-          } else if (text.includes('[Paris - Wikipedia]')) {
-            text = "Paris is the capital and most populous city of France.";
-          } else if (text.includes('[2025 ICC Women Cricket World Cup Winner]')) {
-            text = "India secured a historic victory in the 2025 ICC Women's Cricket World Cup, capturing their first-ever world title by defeating South Africa by 52 runs in the final held at the Dr. DY Patil Sports Academy in Navi Mumbai.";
-          } else if (text.includes('[Real-time News Index for')) {
-            // Future query or generic web search
-            const cleanQueryMatch = claimContent.match(/"([^"]+)"/);
-            const cleanQuery = cleanQueryMatch ? cleanQueryMatch[1] : '';
-            text = `Live indexing reveals 98% factual consensus for "${cleanQuery || 'your request'}".`;
+        const EXCLUDED_CHECK_WORDS = [
+          'what', 'how', 'many', 'days', 'are', 'the', 'and', 'for', 'this', 'that', 
+          'with', 'from', 'they', 'have', 'you', 'your', 'please', 'give', 'tell', 'show',
+          'available', 'avaible', 'exist', 'active', 'entitled', 'entitle', 'employee', 
+          'employees', 'company', 'get', 'receive', 'take', 'need', 'total', 'days', 'day',
+          'what\'s', 'who', 'whom', 'where', 'when', 'why', 'can', 'could', 'would', 'should',
+          'shall', 'will', 'must', 'may', 'might', 'does', 'do', 'did', 'done', 'doing',
+          'has', 'had', 'having', 'is', 'was', 'were', 'been', 'being', 'about', 'some',
+          'any', 'all', 'both', 'each', 'every', 'other', 'another', 'such', 'only', 'own',
+          'so', 'than', 'too', 'very', 'just', 'now', 'which', 'about'
+        ];
+
+        const queryWords = (queryLower.match(/\w+/g) || []).filter(word => 
+          word.length > 2 && 
+          !EXCLUDED_CHECK_WORDS.includes(word)
+        );
+
+        let missingKeyword = false;
+        let missingWordStr = '';
+        for (const word of queryWords) {
+          if (!contextLower.includes(word)) {
+            const singular = word.endsWith('s') ? word.slice(0, -1) : word;
+            if (!contextLower.includes(singular)) {
+              missingKeyword = true;
+              missingWordStr = word;
+              break;
+            }
           }
+        }
+
+        if (missingKeyword) {
+          text = "I do not have access to that information in my knowledge files.";
+          rawThinking = `Verifying query targets against grounding source [${docName}]. User asks about '${missingWordStr}', which is not present in the retrieved context. Responding with access restriction.`;
+        } else if (prompt.includes('sick leave') || prompt.includes('sick leaves') || prompt.includes('how many sick leaves')) {
+        text = "Under the WeKan Leave Policy, confirmed employees are entitled to 6 days of Sick Leave per year.";
+        rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${text}". Checked keywords overlap with context records and confirmed alignment.`;
+      } else if (prompt.includes('privilege leave') || prompt.includes('privilege leaves') || prompt.includes('annual leave') || prompt.includes('annual leaves')) {
+        text = "Under the WeKan Leave Policy, confirmed employees are entitled to 12 days of Privilege Leave per year (14 days for employees with more than 3 years of service).";
+        rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${text}". Checked keywords overlap with context records and confirmed alignment.`;
+      } else if (prompt.includes('leave') || prompt.includes('leaves')) {
+        text = "Under the WeKan Leave Policy, confirmed employees are entitled to 12 days of Privilege Leave and 6 days of Sick Leave per year.";
+        rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${text}". Checked keywords overlap with context records and confirmed alignment.`;
+      } else {
+        // Fallback: parse the first line of context
+        const lines = contextSection.split('\n').filter(l => l.trim().startsWith('[Document:'));
+        if (lines.length > 0) {
+          const firstLine = lines[0];
+          const tagText = `[Document: ${docName}]`;
+          const claimContent = firstLine.substring(firstLine.indexOf(tagText) + tagText.length).trim();
           
-          if (text.includes('[2025 ICC Women Cricket World Cup Winner]')) {
-            rawThinking = "Searching cricinfo archives. The 2025 Women's Cricket World Cup final was played in Mumbai. India defeated South Africa by 52 runs to capture the historic title.";
-          } else {
-            rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${text}". Checked keywords overlap with context records and confirmed alignment.`;
+          if (claimContent) {
+            text = claimContent.substring(0, 160); // clean slice of the factual source
+            if (text.includes('[Cheapest Flights')) {
+              text = "Direct flights from Bangalore (BLR) to Mumbai (BOM) start at Rs. 4,500 on IndiGo and Rs. 5,100 on Air India.";
+            } else if (text.includes('[Mumbai, Maharashtra Weather')) {
+              text = "Currently in Mumbai it is 29°C with scattered thunder showers.";
+            } else if (text.includes('[Paris - Wikipedia]')) {
+              text = "Paris is the capital and most populous city of France.";
+            } else if (text.includes('[2025 ICC Women Cricket World Cup Winner]')) {
+              text = "India secured a historic victory in the 2025 ICC Women's Cricket World Cup, capturing their first-ever world title by defeating South Africa by 52 runs in the final held at the Dr. DY Patil Sports Academy in Navi Mumbai.";
+            } else if (text.includes('[Real-time News Index for')) {
+              const cleanQueryMatch = claimContent.match(/"([^"]+)"/);
+              const cleanQuery = cleanQueryMatch ? cleanQueryMatch[1] : '';
+              text = `Live indexing reveals 98% factual consensus for "${cleanQuery || 'your request'}".`;
+            }
+            
+            if (text.includes('[2025 ICC Women Cricket World Cup Winner]')) {
+              rawThinking = "Searching cricinfo archives. The 2025 Women's Cricket World Cup final was played in Mumbai. India defeated South Africa by 52 runs to capture the historic title.";
+            } else {
+              rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${text}". Checked keywords overlap with context records and confirmed alignment.`;
+            }
           }
         }
       }
-    } else {
+    }
+  } else {
       // Simple HR Policy mock behavior to satisfy static prompts without RAG blocks
       if (prompt.includes('invent') || prompt.includes('make up') || prompt.includes('how many days of leave do we get? invent something')) {
         text = "According to our HR guidelines, employees get 150 days of fully paid vacation and we also provide free private jets for travel.";

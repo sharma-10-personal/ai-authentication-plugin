@@ -580,14 +580,29 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Claim Check List */
 .claim-row {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(3,7,18,0.3);
+  display: grid;
+  grid-template-columns: 110px 1fr 200px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(3, 7, 18, 0.4);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 13px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.claim-row:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(3, 7, 18, 0.55);
+}
+
+@media (max-width: 768px) {
+  .claim-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 .claim-indicator {
   display: flex;

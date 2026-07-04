@@ -51,18 +51,23 @@ export function cosineSimilarity(v1: number[], v2: number[]): number {
 const STOP_WORDS = new Set([
   'what', 'how', 'many', 'days', 'are', 'present', 'the', 'and', 'for', 'this',
   'that', 'with', 'from', 'they', 'have', 'were', 'was', 'been', 'about', 'who',
-  'will', 'would', 'could', 'should', 'their', 'there', 'them', 'your', 'our'
+  'will', 'would', 'could', 'should', 'their', 'there', 'them', 'your', 'our',
+  'can', 'you', 'give', 'me', 'please', 'tell', 'show', 'get', 'any', 'some',
+  'total', 'number', 'much', 'want', 'need', 'who', 'which', 'where', 'when'
 ]);
 
-// Deterministic Keyword Token Overlap (Jaccard Similarity Fallback)
+// Deterministic Keyword Token Overlap & Phrase Match Scoring
 export function getKeywordOverlapScore(query: string, context: string): number {
   const clean = (str: string) => 
-    new Set((str.toLowerCase().match(/\w+/g) || []).filter(word => word.length > 2 && !STOP_WORDS.has(word)));
+    (str.toLowerCase().match(/\w+/g) || []).filter(word => word.length > 2 && !STOP_WORDS.has(word));
   
-  const qSet = clean(query);
-  const cSet = clean(context);
+  const qWords = clean(query);
+  const cWords = clean(context);
   
-  if (qSet.size === 0 || cSet.size === 0) return 0;
+  if (qWords.length === 0 || cWords.length === 0) return 0;
+  
+  const qSet = new Set(qWords);
+  const cSet = new Set(cWords);
   
   let intersectionSize = 0;
   for (const word of qSet) {
@@ -71,7 +76,56 @@ export function getKeywordOverlapScore(query: string, context: string): number {
     }
   }
   
-  return intersectionSize / (qSet.size + cSet.size - intersectionSize);
+  // Base score is the fraction of clean query terms matched
+  let score = intersectionSize / qSet.size;
+  
+  // Phrase boost: check for bigrams in query matching the context (handling singular/plurals)
+  const queryLower = query.toLowerCase();
+  const contextLower = context.toLowerCase();
+  
+  let phraseMatches = 0;
+  const rawQueryWords = queryLower.match(/\w+/g) || [];
+  for (let i = 0; i < rawQueryWords.length - 1; i++) {
+    const w1 = rawQueryWords[i];
+    const w2 = rawQueryWords[i+1];
+    if (w1.length > 2 && w2.length > 2 && !STOP_WORDS.has(w1) && !STOP_WORDS.has(w2)) {
+      const bigram1 = `${w1} ${w2}`;
+      const w1Singular = w1.endsWith('s') ? w1.slice(0, -1) : w1;
+      const w2Singular = w2.endsWith('s') ? w2.slice(0, -1) : w2;
+      const bigram2 = `${w1Singular} ${w2Singular}`;
+      
+      if (contextLower.includes(bigram1) || contextLower.includes(bigram2)) {
+        phraseMatches++;
+      }
+    }
+  }
+  
+  if (phraseMatches > 0) {
+    score += phraseMatches * 0.3;
+  }
+  
+  // Proximity/Density boost: If key terms appear very close to each other in the context
+  // e.g. "sick" and "leave" appear within 5 words of each other
+  let proximityBoost = 0;
+  for (let i = 0; i < cWords.length - 4; i++) {
+    const window = cWords.slice(i, i + 5);
+    const windowSet = new Set(window);
+    let matchesInWindow = 0;
+    for (const qWord of qSet) {
+      if (windowSet.has(qWord)) {
+        matchesInWindow++;
+      }
+    }
+    if (matchesInWindow >= 2) {
+      proximityBoost = Math.max(proximityBoost, (matchesInWindow / qSet.size) * 0.2);
+    }
+  }
+  score += proximityBoost;
+
+  // Small penalty for very long context to break ties in favor of concise matching
+  score -= (cWords.length * 0.0002);
+  
+  return Math.max(0, score);
 }
 
 export class RetrievalEngine {
