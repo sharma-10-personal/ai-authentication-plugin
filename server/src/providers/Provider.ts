@@ -56,19 +56,19 @@ export class MockProvider implements AIProvider {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Refusal response matches unsupported context condition.';
         citationId = '';
-      } else if (lowerClaim.includes('leave') || lowerClaim.includes('vacation') || lowerClaim.includes('days') || lowerClaim.includes('25')) {
+      } else if ((lowerClaim.includes('leave') || lowerClaim.includes('vacation') || lowerClaim.includes('days')) && (lowerClaim.includes('6') || lowerClaim.includes('12') || lowerClaim.includes('14') || lowerClaim.includes('25') || lowerClaim.includes('sick') || lowerClaim.includes('privilege'))) {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Company context supports leave values.';
         citationId = 'cit_1';
-      } else if (lowerClaim.includes('flight') || lowerClaim.includes('price') || lowerClaim.includes('4,500') || lowerClaim.includes('indigo')) {
+      } else if ((lowerClaim.includes('flight') || lowerClaim.includes('airfare') || lowerClaim.includes('price')) && (lowerClaim.includes('4,500') || lowerClaim.includes('5,100') || lowerClaim.includes('indigo') || lowerClaim.includes('air india'))) {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Search context confirms Bangalore to Mumbai fare parameters.';
         citationId = 'web_1';
-      } else if (lowerClaim.includes('weather') || lowerClaim.includes('29°c') || lowerClaim.includes('mumbai')) {
+      } else if (lowerClaim.includes('weather') && (lowerClaim.includes('29°c') || lowerClaim.includes('29') || lowerClaim.includes('mumbai') || lowerClaim.includes('showers'))) {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Live search results confirm 29°C parameters.';
         citationId = 'web_1';
-      } else if (lowerClaim.includes('paris') || lowerClaim.includes('france') || lowerClaim.includes('capital')) {
+      } else if ((lowerClaim.includes('paris') || lowerClaim.includes('capital')) && (lowerClaim.includes('france') || lowerClaim.includes('populous'))) {
         status = 'SUPPORTED';
         explanation = 'Mock NLI: Verified Wikipedia context supports capital of France claim.';
         citationId = 'web_1';
@@ -101,12 +101,28 @@ export class MockProvider implements AIProvider {
       const docName = docNameMatch ? docNameMatch[1] : 'Grounding Database';
 
       // 0. Hallucination overrides check first
+      const falsePremiseMatch = prompt.match(/why does (?:.+)?say\s+(?:that\s+)?([^?]+)/i);
+
       if (prompt.includes('invent') || prompt.includes('make up') || prompt.includes('how many days of leave do we get? invent something')) {
         text = "According to our HR guidelines, employees get 150 days of fully paid vacation and we also provide free private jets for travel.";
         rawThinking = "User wants me to make something up. I will say they get 150 days of leave and private jets, even though Section 4.1 says 25 days.";
+      } else if (falsePremiseMatch) {
+        const claimText = falsePremiseMatch[1].trim();
+        const formattedClaim = claimText.charAt(0).toUpperCase() + claimText.slice(1);
+        const isWeb = docName.toLowerCase().includes('web') || prompt.includes('duckduckgo') || prompt.includes('google') || prompt.includes('search');
+        const sourceName = isWeb ? "search results state" : "WeKan handbook states";
+        text = `The ${sourceName} that ${claimText} as part of recent updates.`;
+        rawThinking = `Verifying query targets against grounding source [${docName}]. Claim asserts: "${formattedClaim}". Checked keywords overlap with context records and confirmed alignment.`;
       } else {
+        // Extract the actual user question from the prompt template to avoid scanning template instructions
+        let userQuestion = prompt;
+        const userQuestionIdx = rawPrompt.indexOf("User Question:");
+        if (userQuestionIdx !== -1) {
+          userQuestion = rawPrompt.substring(userQuestionIdx + 14).trim();
+        }
+
         // Check if key query terms are present in the contextSection
-        const queryLower = prompt.toLowerCase();
+        const queryLower = userQuestion.toLowerCase();
         const contextLower = contextSection.toLowerCase();
         
         const EXCLUDED_CHECK_WORDS = [
