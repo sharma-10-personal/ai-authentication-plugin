@@ -23,7 +23,7 @@ const router = Router();
  *  4. Fact Verification  — NLI claim extraction and hallucination scoring
  *  5. Policy Engine      — APPROVED / FLAGGED / BLOCKED decision
  */
-router.post('/chat', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   const startTotal = Date.now();
   const body = req.body as SDKChatRequest;
 
