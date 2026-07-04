@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  ShieldAlert, 
-  Activity, 
-  Database, 
-  ListTodo, 
-  Settings2, 
-  Send, 
-  UploadCloud, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle, 
-  Cpu, 
-  RefreshCw, 
+import {
+  ShieldAlert,
+  Activity,
+  Database,
+  ListTodo,
+  Settings2,
+  Send,
+  UploadCloud,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Cpu,
+  RefreshCw,
   Trash2,
   FileText,
   DollarSign,
@@ -21,23 +21,23 @@ import {
   Eye,
   AlertOctagon
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  PieChart, 
-  Pie, 
-  Cell 
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 
 import { SDKChatResponse, UploadedDocument, ProviderConfig } from 'shared';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'playground' | 'documents' | 'audits' | 'providers'>('dashboard');
-  
+
   // Dashboard Metrics state
   const [metrics, setMetrics] = useState<any>({
     totalRequests: 0,
@@ -55,7 +55,7 @@ export default function App() {
   const [audits, setAudits] = useState<any[]>([]);
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
-  
+
   // Playground state
   const [chatMessages, setChatMessages] = useState<any[]>([
     { role: 'assistant', content: 'Hello! I am protected by the Guardrail SDK middleware. Ask me anything, or try testing HR guidelines or PII data.' }
@@ -257,39 +257,39 @@ export default function App() {
       <aside className="sidebar">
         <div className="logo-section">
           <span className="logo-icon">🛡️</span>
-          <span className="logo-text">Guardrail Plug</span>
+          <span className="logo-text">HalluciNOT</span>
         </div>
 
         <ul className="nav-links">
-          <li 
+          <li
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
             <Activity size={18} />
             Overview Dashboard
           </li>
-          <li 
+          <li
             className={`nav-item ${activeTab === 'playground' ? 'active' : ''}`}
             onClick={() => setActiveTab('playground')}
           >
             <Cpu size={18} />
             Chat Playground
           </li>
-          <li 
+          <li
             className={`nav-item ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
             <Database size={18} />
             Knowledge Base
           </li>
-          <li 
+          <li
             className={`nav-item ${activeTab === 'audits' ? 'active' : ''}`}
             onClick={() => setActiveTab('audits')}
           >
             <ListTodo size={18} />
             Audit Logs
           </li>
-          <li 
+          <li
             className={`nav-item ${activeTab === 'providers' ? 'active' : ''}`}
             onClick={() => setActiveTab('providers')}
           >
@@ -375,14 +375,14 @@ export default function App() {
                     <AreaChart data={chartData}>
                       <defs>
                         <linearGradient id="latencyGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="name" stroke="#6b7280" fontSize={11} />
                       <YAxis stroke="#6b7280" fontSize={11} />
-                      <Tooltip 
-                        contentStyle={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)' }} 
+                      <Tooltip
+                        contentStyle={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)' }}
                         labelStyle={{ color: '#9ca3af' }}
                       />
                       <Area type="monotone" dataKey="latency" name="Latency (ms)" stroke="#3b82f6" fillOpacity={1} fill="url(#latencyGlow)" />
@@ -495,12 +495,12 @@ export default function App() {
             <div className="settings-panel">
               <div className="glass-card form-group">
                 <h3 className="panel-title" style={{ marginBottom: '16px' }}>Configuration</h3>
-                
+
                 <div className="form-group" style={{ marginBottom: '12px' }}>
                   <label className="form-label">Client App Name</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
+                  <input
+                    type="text"
+                    className="input-field"
                     value={playgroundAppName}
                     onChange={(e) => setPlaygroundAppName(e.target.value)}
                   />
@@ -508,7 +508,7 @@ export default function App() {
 
                 <div className="form-group" style={{ marginBottom: '12px' }}>
                   <label className="form-label">AI Provider</label>
-                  <select 
+                  <select
                     className="select-field"
                     value={selectedProvider}
                     onChange={(e) => {
@@ -530,9 +530,9 @@ export default function App() {
 
                 <div className="form-group" style={{ marginBottom: '12px' }}>
                   <label className="form-label">Model Target</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
+                  <input
+                    type="text"
+                    className="input-field"
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
                   />
@@ -697,9 +697,9 @@ export default function App() {
               </div>
 
               <form className="chat-input-area" onSubmit={handleSendChat}>
-                <input 
-                  type="text" 
-                  className="input-field" 
+                <input
+                  type="text"
+                  className="input-field"
                   placeholder="Type a factual query (e.g. 'How many leave days do employees get?')"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
@@ -732,10 +732,10 @@ export default function App() {
                     </div>
                   )}
                 </div>
-                <input 
+                <input
                   id="file-upload-input"
-                  type="file" 
-                  style={{ display: 'none' }} 
+                  type="file"
+                  style={{ display: 'none' }}
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                 />
                 <button type="submit" className="btn" style={{ alignSelf: 'flex-end' }} disabled={isUploading || !uploadFile}>
@@ -886,7 +886,7 @@ export default function App() {
                         </span>
                       </td>
                       <td>
-                        <button 
+                        <button
                           className={`btn ${p.enabled ? 'btn-danger' : ''}`}
                           style={{ padding: '6px 12px', fontSize: '12px' }}
                           onClick={() => toggleProvider(p)}
@@ -916,9 +916,9 @@ export default function App() {
             <div className="modal-header">
               <h3 className="panel-title">Audit Trace: {selectedAudit.auditId}</h3>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <button 
-                  className="btn btn-secondary audit-export-btn" 
-                  style={{ marginRight: '16px', padding: '6px 12px', fontSize: '12px' }} 
+                <button
+                  className="btn btn-secondary audit-export-btn"
+                  style={{ marginRight: '16px', padding: '6px 12px', fontSize: '12px' }}
                   onClick={handleExportAuditCertificate}
                 >
                   🖨️ Export Audit Certificate
@@ -1000,35 +1000,13 @@ export default function App() {
 
               {/* Side-by-Side Auditing Panel */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-                {/* Left Side: Raw Agent Output */}
+                {/* Left Side: Raw Agent Thought Processes */}
                 <div className="glass-card" style={{ background: 'rgba(239,68,68,0.02)', borderColor: 'rgba(239,68,68,0.15)' }}>
                   <h4 style={{ color: '#ef4444', fontSize: '13px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <XCircle size={14} /> Raw Agent Thought Processes
                   </h4>
-                  <div style={{ fontSize: '13px', lineHeight: '1.6', background: 'rgba(0,0,0,0.2)', padding: '14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)', minHeight: '150px' }}>
-                    {selectedAudit.verification?.extractedClaims && selectedAudit.verification.extractedClaims.length > 0 ? (
-                      <div>
-                        {selectedAudit.response?.rawText.split(/[.!?]+/).map((sentence: string, idx: number) => {
-                          const cleanSentence = sentence.trim();
-                          if (!cleanSentence) return null;
-                          // Find if this sentence matches any unsupported claim
-                          const isUnsupported = selectedAudit.verification.extractedClaims.some((c: any) => 
-                            c.status === 'UNSUPPORTED' && cleanSentence.toLowerCase().includes(c.claim.toLowerCase().replace(/[.!?]+$/, ''))
-                          );
-                          return (
-                            <span 
-                              key={idx} 
-                              style={isUnsupported ? { background: 'rgba(239,68,68,0.2)', textDecoration: 'line-through', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.3)', marginRight: '4px' } : { marginRight: '4px' }}
-                              title={isUnsupported ? "Hallucination Detected!" : undefined}
-                            >
-                              {sentence}.
-                            </span>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      selectedAudit.response?.rawText
-                    )}
+                  <div style={{ fontSize: '13px', lineHeight: '1.6', background: 'rgba(0,0,0,0.2)', padding: '14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)', minHeight: '150px', maxHeight: '300px', overflowY: 'auto', whiteSpace: 'pre-wrap', color: '#9ca3af', fontStyle: 'italic' }}>
+                    {selectedAudit.response?.rawThinking || "No raw thought patterns logged for this request."}
                   </div>
                 </div>
 
@@ -1070,7 +1048,7 @@ export default function App() {
 
               {/* Timeline display */}
               <div className="audit-details-timeline">
-                
+
                 {/* 1. Input Interceptor */}
                 <div className="timeline-step">
                   <div className="timeline-dot-wrapper">
@@ -1189,8 +1167,8 @@ export default function App() {
                                     </div>
                                     {sourceScore !== null && (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                        <span style={{ 
-                                          fontWeight: 800, 
+                                        <span style={{
+                                          fontWeight: 800,
                                           color: sourceScore >= 0.8 ? '#10b981' : sourceScore >= 0.5 ? '#f59e0b' : '#ef4444',
                                           fontSize: '11px'
                                         }}>
