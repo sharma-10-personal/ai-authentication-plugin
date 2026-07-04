@@ -1,5 +1,5 @@
 import { Message, Claim, Citation } from 'shared';
-import { AIProvider } from '../providers/Provider.js';
+import { AIProvider } from '../providers/index.js';
 
 export interface VerificationResult {
   claims: Claim[];

@@ -1,5 +1,5 @@
 import { Citation } from 'shared';
-import { ProviderFactory } from '../providers/Provider.js';
+import { ProviderFactory } from '../providers/index.js';
 import { config } from '../config/index.js';
 
 export class WebSearchRetriever {

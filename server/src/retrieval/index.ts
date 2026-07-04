@@ -1,6 +1,6 @@
 import { DocumentChunk, Citation } from 'shared';
 import { ChunkRepository } from '../db/index.js';
-import { AIProvider } from '../providers/Provider.js';
+import { AIProvider } from '../providers/index.js';
 
 // Text Chunking Service
 export function chunkText(text: string, chunkSize: number = 600, overlap: number = 150): string[] {
