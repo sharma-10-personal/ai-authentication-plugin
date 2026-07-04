@@ -415,4 +415,14 @@ router.post('/providers', async (req: Request, res: Response) => {
   res.json(updated);
 });
 
+// ----------------------------------------------------
+// SYSTEM CONFIG CONFIGURATION ENDPOINT: GET /config
+// ----------------------------------------------------
+router.get('/config', (req: Request, res: Response) => {
+  res.json({
+    defaultProvider: config.defaultProvider,
+    defaultModel: config.defaultModel
+  });
+});
+
 export default router;

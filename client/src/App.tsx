@@ -78,6 +78,21 @@ export default function App() {
   // Refresh helper
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Fetch default config on mount
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.defaultProvider) {
+          setSelectedProvider(data.defaultProvider);
+        }
+        if (data.defaultModel) {
+          setSelectedModel(data.defaultModel);
+        }
+      })
+      .catch(err => console.error('Failed to load default config:', err));
+  }, []);
+
   // Fetch metrics and data
   useEffect(() => {
     fetch('/api/metrics')
@@ -852,7 +867,7 @@ export default function App() {
                       <td style={{ fontWeight: 600, color: '#fff', textTransform: 'capitalize' }}>{p.name}</td>
                       <td style={{ fontFamily: 'monospace' }}>{p.defaultModel}</td>
                       <td style={{ color: '#6b7280' }}>
-                        {p.providerId === 'openai' || p.providerId === 'gemini' ? '••••••••••••••••' : 'None Required'}
+                        {p.providerId === 'openai' || p.providerId === 'gemini' || p.providerId === 'openrouter' ? '••••••••••••••••' : 'None Required'}
                       </td>
                       <td>{p.latency} ms</td>
                       <td>

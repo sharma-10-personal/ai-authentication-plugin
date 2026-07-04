@@ -1,11 +1,24 @@
 {
-  "name": "ai-authentication-plugin",
-  "version": "1.0.0",
-  "description": "An AI Authentication and Guardrail SDK for middleware routing and gateway analysis.",
+  "name": "guardrail-plug-sdk",
+  "version": "1.0.3",
+  "description": "A plug-and-play AI Auditing & Hallucination Detection SDK. Intercepts LLM inputs/outputs, verifies factual grounding against your knowledge base, and blocks or flags unverified responses.",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -13,10 +26,18 @@
   },
   "keywords": [
     "ai",
-    "authentication",
     "guardrail",
-    "gateway",
-    "security"
+    "hallucination",
+    "auditing",
+    "middleware",
+    "llm",
+    "gemini",
+    "openai",
+    "rag",
+    "fact-checking",
+    "trust-score",
+    "policy-engine",
+    "sdk"
   ],
   "author": "Sharma S S <sharmas@wekancode.com>",
   "license": "ISC",
@@ -24,6 +45,9 @@
     "url": "https://github.com/sharma-10-personal/ai-authentication-plugin/issues"
   },
   "homepage": "https://github.com/sharma-10-personal/ai-authentication-plugin#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.24",

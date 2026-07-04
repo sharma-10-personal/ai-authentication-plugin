@@ -11,6 +11,7 @@ export let isMongoConnected = false;
 export async function connectDb() {
   if (!config.mongoUri) {
     log('No MongoDB URI provided. Using JSON database fallback.');
+    await seedProviders();
     return;
   }
   try {
@@ -23,8 +24,8 @@ export async function connectDb() {
   } catch (err) {
     log('Failed to connect to MongoDB. Falling back to local file database.');
     isMongoConnected = false;
-    initFallbackDb();
   }
+  await seedProviders();
 }
 
 // Fallback JSON DB Implementation
@@ -42,6 +43,7 @@ function initFallbackDb() {
       documents: [],
       chunks: [],
       providers: [
+        { providerId: 'openrouter', name: 'OpenRouter', enabled: true, defaultModel: 'google/gemini-2.5-flash', healthStatus: 'healthy', latency: 85 },
         { providerId: 'openai', name: 'OpenAI', enabled: true, defaultModel: 'gpt-4o-mini', healthStatus: 'healthy', latency: 45 },
         { providerId: 'gemini', name: 'Gemini', enabled: true, defaultModel: 'gemini-2.5-flash', healthStatus: 'healthy', latency: 60 },
         { providerId: 'anthropic', name: 'Anthropic', enabled: false, defaultModel: 'claude-3-haiku', healthStatus: 'unknown', latency: 0 },
@@ -287,3 +289,31 @@ export const ProviderRepository = {
     }
   }
 };
+
+export async function seedProviders() {
+  const defaultProviders = [
+    { providerId: 'openrouter', name: 'OpenRouter', enabled: true, defaultModel: 'google/gemini-2.5-flash', healthStatus: 'healthy', latency: 85 },
+    { providerId: 'openai', name: 'OpenAI', enabled: true, defaultModel: 'gpt-4o-mini', healthStatus: 'healthy', latency: 45 },
+    { providerId: 'gemini', name: 'Gemini', enabled: true, defaultModel: 'gemini-2.5-flash', healthStatus: 'healthy', latency: 60 },
+    { providerId: 'anthropic', name: 'Anthropic', enabled: false, defaultModel: 'claude-3-haiku', healthStatus: 'unknown', latency: 0 },
+    { providerId: 'ollama', name: 'Ollama', enabled: false, defaultModel: 'llama3', healthStatus: 'unknown', latency: 0 }
+  ];
+
+  if (isMongoConnected) {
+    try {
+      const count = await MongoProvider.countDocuments();
+      if (count === 0) {
+        log('Seeding default providers into MongoDB...');
+        await MongoProvider.insertMany(defaultProviders);
+      }
+    } catch (err: any) {
+      log(`Error seeding providers: ${err.message}`);
+    }
+  } else {
+    const db = readFallbackDb();
+    if (!db.providers.some(p => p.providerId === 'openrouter')) {
+      db.providers.unshift({ providerId: 'openrouter', name: 'OpenRouter', enabled: true, defaultModel: 'google/gemini-2.5-flash', healthStatus: 'healthy', latency: 85 });
+      writeFallbackDb(db);
+    }
+  }
+}

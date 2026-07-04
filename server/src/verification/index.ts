@@ -179,6 +179,86 @@ Respond ONLY with a JSON object:
     }
   }
 
+  async verifyClaimsBatch(claims: string[], citations: Citation[]): Promise<Claim[]> {
+    try {
+      const contextBlocks = citations.map(c => `[ID: ${c.citationId}] ${c.content}`).join('\n\n');
+      const claimsList = claims.map((c, i) => `Claim ${i + 1}: "${c}"`).join('\n');
+
+      const prompt: Message[] = [
+        {
+          role: 'system',
+          content: `You are an NLI (Natural Language Inference) auditor. Compare each "Claim" against the trusted "Context" chunks.
+For each claim, classify its status as:
+- SUPPORTED: If the context explicitly confirms the claim.
+- PARTIALLY_SUPPORTED: If the context supports part of the claim but is missing details.
+- UNSUPPORTED: If the context does not contain this information or contradicts it.
+
+Respond ONLY with a JSON object containing a "verifications" array matching the order of claims:
+{
+  "verifications": [
+    {
+      "status": "SUPPORTED" | "PARTIALLY_SUPPORTED" | "UNSUPPORTED",
+      "explanation": "Why this decision was made",
+      "citationId": "The ID (e.g. cit_1 or web_1) that confirms this claim (if supported/partially supported)"
+    },
+    ...
+  ]
+}
+Do not return any other text, explanations or markdown formatting outside the JSON.`
+        },
+        {
+          role: 'user',
+          content: `Context:\n${contextBlocks}\n\nClaims to verify:\n${claimsList}`
+        }
+      ];
+
+      const res = await this.provider.chat(prompt);
+      const cleaned = res.text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      if (parsed && Array.isArray(parsed.verifications)) {
+        return claims.map((claim, idx) => {
+          const ver = parsed.verifications[idx] || {};
+          return {
+            claim,
+            status: ver.status || 'UNSUPPORTED',
+            explanation: ver.explanation || 'No validation explanation provided.',
+            citationId: ver.citationId || undefined
+          };
+        });
+      }
+    } catch (err: any) {
+      console.warn('[VerificationEngine] Batch NLI verification failed. Falling back to heuristic overlap check.', err.message);
+    }
+
+    // Fallback: individual heuristic validation
+    const verifiedClaims: Claim[] = [];
+    for (const claim of claims) {
+      let hasOverlap = false;
+      let matchingCitId = '';
+      for (const cit of citations) {
+        const words = claim.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        if (words.length === 0) continue;
+        const matches = words.filter(w => cit.content.toLowerCase().includes(w));
+        if (matches.length / words.length > 0.4) {
+          hasOverlap = true;
+          matchingCitId = cit.citationId;
+          break;
+        }
+      }
+
+      verifiedClaims.push({
+        claim,
+        status: hasOverlap ? 'SUPPORTED' : 'UNSUPPORTED',
+        explanation: hasOverlap 
+          ? 'Supported based on high semantic keyword overlap with retrieved chunks.' 
+          : 'Unsupported: No matching keywords or clauses found in retrieved context.',
+        citationId: matchingCitId || undefined
+      });
+    }
+    return verifiedClaims;
+  }
+
   // End-to-end verification scoring pipeline
   async verify(text: string, citations: Citation[]): Promise<VerificationResult> {
     if (citations.length === 0) {
@@ -201,12 +281,8 @@ Respond ONLY with a JSON object:
       return { claims: [], hallucinationScore: 0, riskLevel: 'LOW' };
     }
 
-    // 2. Verify claims concurrently or in sequence
-    const verifiedClaims: Claim[] = [];
-    for (const claim of claimTexts) {
-      const res = await this.verifyClaim(claim, citations);
-      verifiedClaims.push(res);
-    }
+    // 2. Verify claims in batch to minimize LLM rate limiting
+    const verifiedClaims = await this.verifyClaimsBatch(claimTexts, citations);
 
     // 3. Score calculations
     const unsupportedCount = verifiedClaims.filter(c => c.status === 'UNSUPPORTED').length;
