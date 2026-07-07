@@ -5,7 +5,7 @@ A plug-and-play AI Auditing, Safety, and Hallucination Interception SDK. Wrap an
 ## Installation
 
 ```bash
-npm install hallucinot
+npm install hallucinot-sdk
 ```
 
 ## Quick Start
@@ -13,7 +13,7 @@ npm install hallucinot
 Initialize the SDK and route your chat prompts through the security gateway:
 
 ```typescript
-import { Guardrail } from 'hallucinot';
+import { Guardrail } from 'hallucinot-sdk';
 
 const guardrail = new Guardrail({
   endpoint: 'http://localhost:5050', // Gateway server address
