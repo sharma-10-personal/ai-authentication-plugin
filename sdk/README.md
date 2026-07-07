@@ -1,11 +1,11 @@
-# Guardrail Plug SDK
+# HalluciNOT SDK
 
 A plug-and-play AI Auditing, Safety, and Hallucination Interception SDK. Wrap any LLM agent to intercept prompt injections, redact PII, trace reasoning, verify factual grounding against corporate knowledge bases, and block ungrounded responses in real time.
 
 ## Installation
 
 ```bash
-npm install guardrail-plug-sdk
+npm install hallucinot
 ```
 
 ## Quick Start
@@ -13,7 +13,7 @@ npm install guardrail-plug-sdk
 Initialize the SDK and route your chat prompts through the security gateway:
 
 ```typescript
-import { Guardrail } from 'guardrail-plug-sdk';
+import { Guardrail } from 'hallucinot';
 
 const guardrail = new Guardrail({
   endpoint: 'http://localhost:5050', // Gateway server address

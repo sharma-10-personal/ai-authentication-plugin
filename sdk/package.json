@@ -1,5 +1,5 @@
 {
-  "name": "guardrail-plug-sdk",
+  "name": "hallucinot",
   "version": "1.0.3",
   "description": "A plug-and-play AI Auditing & Hallucination Detection SDK. Intercepts LLM inputs/outputs, verifies factual grounding against your knowledge base, and blocks or flags unverified responses.",
   "type": "module",
